@@ -1,0 +1,147 @@
+<body></body>
+<script>
+    const className = 'level-up',
+        pixelSize = '20px',
+        width = 16,
+        height = 16,
+        colors = {
+            '--black': '#000',
+            '--dark-green': '#008B00',
+            '--light-green': '#00FF00',
+            '--green': '#00CD00',
+        };
+
+    const bodyElement = document.querySelector('body'),
+        styleElement = document.createElement('style'),
+        controllerStyleElement = document.createElement('style');
+
+    let currentColor = Object.keys(colors)[0];
+
+    (() => {
+        let html = `<ul class="colors-list" >`;
+        for (property in colors) {
+            html += `<li class="color" style="background-color: ${colors[property]};" data-color="${property}" ></li>`;
+        }
+        html += `</ul>
+		<div class="${className}" >`;
+        html += `\n   <div class="${className}__pixel" ></div>`.repeat(
+            width * height
+        );
+        html += '\n</div>';
+        html += '<button class="finish" >Finish</button>';
+
+        let colorsVariables = '';
+
+        for (property in colors) {
+            colorsVariables += `   ${property}: ${colors[property]};\n`;
+        }
+
+        let style = `
+body {
+   display: flex;
+   margin: 0;
+   width: 100vw;
+   height: 100vh;
+   align-items: center;
+   justify-content: center;
+}
+
+.${className}{\n${colorsVariables}   --pixel-size: ${pixelSize};
+   display: inline-grid;
+   grid-template-rows: repeat(${height}, var(--pixel-size, 10px));
+   grid-template-columns: repeat(${width}, var(--pixel-size, 10px));
+}
+
+.${className}__pixel {
+   background-color: var(--color);
+}
+	`;
+        styleElement.innerHTML = style;
+
+        controllerStyleElement.innerHTML = `
+		.finish{
+			margin-left: 50px;
+			width: 100px;
+			height: 50px;
+			cursor: pointer;
+		}
+		.colors-list{
+			display: grid;
+			list-style-type: none;
+			margin-right: 50px;
+			grid-template-columns: repeat(3, 30px);
+			grid-template-rows: repeat(${Math.ceil(Object.keys(colors).length / 3)}, 30px);
+			grid-gap: 5px;
+		}
+		.color{ 
+			cursor: pointer;
+		}
+		.color:hover{
+			opacity: 0.7;
+		}
+		.color.is-active{
+		    outline: 3px black dashed;
+		}
+		.${className}__pixel {
+		  border: 1px solid black;
+		  cursor: pointer;
+		}
+	`;
+
+        bodyElement.innerHTML = html;
+        bodyElement.appendChild(styleElement);
+        bodyElement.appendChild(controllerStyleElement);
+
+        document
+            .querySelector(`.${className}`)
+            .addEventListener('click', function (event) {
+                const el = event.target;
+                if (el.classList.contains(`${className}__pixel`)) {
+                    el.style.setProperty('--color', `var(${currentColor})`);
+                }
+            });
+        document
+            .querySelector(`.${className}`)
+            .addEventListener('contextmenu', function (event) {
+                event.preventDefault();
+                const el = event.target;
+                if (el.classList.contains(`${className}__pixel`)) {
+                    el.removeAttribute('style');
+                }
+            });
+
+        document
+            .querySelector('.colors-list')
+            .addEventListener('click', function (event) {
+                event.preventDefault();
+                const el = event.target;
+                if (el.classList.contains('color')) {
+                    currentColor = el.getAttribute('data-color');
+                    document
+                        .querySelectorAll('.color')
+                        .forEach((element) =>
+                            element.classList.remove('is-active')
+                        );
+                    el.classList.add('is-active');
+                }
+            });
+        setTimeout(() => {
+            document.querySelector('.color').click();
+        }, 500);
+
+        document
+            .querySelector('.finish')
+            .addEventListener('click', function () {
+                const html = document.querySelector(`.${className}`).outerHTML;
+                bodyElement.innerHTML = `
+			<h1>HTML</h1>
+			<pre id="prehtml" ></pre>
+			<h1>CSS</h1>
+			<pre>${styleElement.innerHTML}</pre>
+		`;
+                setTimeout(() => {
+                    document.querySelector('#prehtml').innerText = html;
+                }, 200);
+            });
+    })();
+</script>
